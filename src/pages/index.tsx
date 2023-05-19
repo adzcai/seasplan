@@ -11,6 +11,7 @@ export default function Home({
 }: any) {
   const [selectedSemesters, setSelectedSemesters] = useState(semesters);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(meta.catalogPrefixes);
+  const [numberFilter, setNumberFilter] = useState<string>("");
 
   return (
     <main className={"flex min-h-screen flex-col items-center p-24 " + inter.className}>
@@ -34,6 +35,13 @@ export default function Home({
             <h3>{s.term}</h3>
           </button>
         ))}
+        {/* clear all button */}
+        <button
+        className="flex flex-col items-center justify-center p-4 rounded hover:bg-gray-500 bg-gray-300"
+        onClick={() => setSelectedSemesters([])}
+        >
+          <h2>Clear all</h2>
+        </button>
       </div>
       <h1>Subjects</h1>
       <div className="flex flex-row">
@@ -54,14 +62,39 @@ export default function Home({
             <h2>{s}</h2>
           </button>
         ))}
+        {/* clear all button */}
+        <button
+        className="flex flex-col items-center justify-center p-4 rounded hover:bg-gray-500 bg-gray-300"
+        onClick={() => setSelectedSubjects([])}
+        >
+          <h2>Clear all</h2>
+        </button>
+      </div>
+      <h1>Filter by number</h1>
+      <div className="flex flex-row">
+        <input
+        className="p-4 rounded border border-gray-300"
+        type="text"
+        value={numberFilter}
+        onChange={(e) => setNumberFilter(e.target.value)}
+        placeholder="e.g. 2**"
+        />
+        <button
+        className="flex flex-col items-center justify-center p-4 rounded hover:bg-gray-500 bg-gray-300"
+        onClick={() => setNumberFilter("")}
+        >
+          <h2>Clear</h2>
+        </button>
       </div>
       <h1>Courses</h1>
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-[12rem_1fr]">
         {plan
         .filter((c: any) => {
           const semesterMatch = c.semesters.find((s: any) => selectedSemesters.find(equals(s)))
           const subjectMatch = selectedSubjects.includes(c.catalogPrefix);
-          return semesterMatch && subjectMatch;
+          // allow wildcards in the number filter; create a new regexp and treat "*" as "any number"
+          const numberMatch = new RegExp(numberFilter.replace(/\*/g, "[0-9]+")).test(c.catalogNumber);
+          return semesterMatch && subjectMatch && numberMatch;
         })
         .map((c: any) => (
           <Fragment key={c.id}>
